@@ -1,9 +1,9 @@
 """Utility file to seed ratings database from MovieLens data in seed_data/"""
 
-
+import datetime
 from model import User
 # from model import Rating
-# from model import Movie
+from model import Movie
 
 from model import connect_to_db, db
 from server import app
@@ -23,12 +23,12 @@ def load_users():
         row = row.rstrip()
         user_id, age, gender, occupation, zipcode = row.split("|")
 
-        user = User(user_id=user_id,
+        users = User(user_id=user_id,
                     age=age,
                     zipcode=zipcode)
 
         # We need to add to the session or it won't ever be stored
-        db.session.add(user)
+        db.session.add(users)
 
     # Once we're done, we should commit our work
     db.session.commit()
@@ -37,6 +37,28 @@ def load_users():
 def load_movies():
     """Load movies from u.item into database."""
 
+    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct","Nov","Dec"]
+    month_dict = dict(zip(months, range(1,13,1)))
+
+    #Read in u.item and insert data
+    for row in open("seed_data/u.item"):
+        row = row.strip()
+        movie_id, title, released, imdb_url = row.split("|")[0:4]
+        movie_id = movie_id[:-7]
+        released_day = int(released[0:2])
+        released_month = month_dict[released[3:6]]
+        released_year = int(released[7:])
+
+        #released_at = datetime.date(released_year, released_month, released_day)
+        released_at = datetime.datetime(released_year, released_month, released_day,0,0,0)
+
+        movies = Movie(movie_id=movie_id,
+                        title=title,
+                        released_at=released_at,
+                        imdb_url=imdb_url)
+
+        db.session.add(movies)
+    db.session.commit()
 
 def load_ratings():
     """Load ratings from u.data into database."""
