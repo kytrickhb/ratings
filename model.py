@@ -28,36 +28,39 @@ class User(db.Model):
 
         return "<User user_id=%s email=%s>" % (self.user_id, self.email)
 
+
 class Movie(db.Model):
-    """Movies"""
+    """Movie on ratings website."""
 
     __tablename__ = "movies"
 
     movie_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    title = db.Column(db.String(64), nullable=False)
-    released_at = db.Column(db.DateTime, nullable=True)
-    imdb_url = db.Column(db.String(128), nullable=True)
+    title = db.Column(db.String(64))
+    released_at = db.Column(db.DateTime)
+    imdb_url = db.Column(db.String(200))
 
     def __repr__(self):
         """Provide helpful representation when printed."""
 
         return "<Movie movie_id=%s title=%s>" % (self.movie_id, self.title)
 
+
 class Rating(db.Model):
-    """Ratings"""
+    """Rating of a movie by a user."""
 
     __tablename__ = "ratings"
 
     rating_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    movie_id = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, nullable=False)
-    score = db.Column(db.Integer, nullable=False)
+    movie_id = db.Column(db.Integer)
+    user_id = db.Column(db.Integer)
+    score = db.Column(db.Integer)
 
     def __repr__(self):
         """Provide helpful representation when printed."""
 
-        return "<Rating rating_id=%s movie_id=%s>" % (self.rating_id, self.movie_id)
-# Put your Movie and Rating model classes here.
+        return "<Rating rating_id=%s movie_id=%s user_id=%s score=%s>" % (
+            self.rating_id, self.movie_id, self.user_id, self.score)
+
 
 ##############################################################################
 # Helper functions

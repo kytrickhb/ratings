@@ -1,11 +1,8 @@
 """Utility file to seed ratings database from MovieLens data in seed_data/"""
 
 import datetime
-from model import User
-# from model import Rating
-from model import Movie
 
-from model import connect_to_db, db
+from model import User, Rating, Movie, connect_to_db, db
 from server import app
 
 
@@ -14,21 +11,20 @@ def load_users():
 
     print "Users"
 
-    # Delete all rows in table, so if we need to run this a second time,
-    # we won't be trying to add duplicate users
-    User.query.delete()
-
-    # Read u.user file and insert data
-    for row in open("seed_data/u.user"):
+    for i, row in enumerate(open("seed_data/u.user")):
         row = row.rstrip()
         user_id, age, gender, occupation, zipcode = row.split("|")
 
-        users = User(user_id=user_id,
+        user = User(user_id=user_id,
                     age=age,
                     zipcode=zipcode)
 
         # We need to add to the session or it won't ever be stored
-        db.session.add(users)
+        db.session.add(user)
+
+        # provide some sense of progress
+        if i % 100 == 0:
+            print i
 
     # Once we're done, we should commit our work
     db.session.commit()
@@ -37,40 +33,85 @@ def load_users():
 def load_movies():
     """Load movies from u.item into database."""
 
-    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct","Nov","Dec"]
-    month_dict = dict(zip(months, range(1,13,1)))
+    print "Movies"
 
-    #Read in u.item and insert data
-    for row in open("seed_data/u.item"):
-        row = row.strip()
-        movie_id, title, released, imdb_url = row.split("|")[0:4]
-        movie_id = movie_id[:-7]
-        released_day = int(released[0:2])
-        released_month = month_dict[released[3:6]]
-        released_year = int(released[7:])
+    for i, row in enumerate(open("seed_data/u.item")):
+        row = row.rstrip()
 
-        #released_at = datetime.date(released_year, released_month, released_day)
-        released_at = datetime.datetime(released_year, released_month, released_day,0,0,0)
+        # clever -- we can unpack part of the row!
+        movie_id, title, released_str, junk, imdb_url = row.split("|")[:5]
 
-        movies = Movie(movie_id=movie_id,
-                        title=title,
-                        released_at=released_at,
-                        imdb_url=imdb_url)
+        # The date is in the file as daynum-month_abbreviation-year;
+        # we need to convert it to an actual datetime object.
 
-        db.session.add(movies)
+        if released_str:
+            released_at = datetime.datetime.strptime(released_str, "%d-%b-%Y")
+        else:
+            released_at = None
+
+        # Remove the (YEAR) from the end of the title.
+
+        title = title[:-7]   # " (YEAR)" == 7
+
+        movie = Movie(movie_id=movie_id,
+                      title=title,
+                      released_at=released_at,
+                      imdb_url=imdb_url)
+
+        # We need to add to the session or it won't ever be stored
+        db.session.add(movie)
+
+        # provide some sense of progress
+        if i % 100 == 0:
+            print i
+
+    # Once we're done, we should commit our work
     db.session.commit()
+
 
 def load_ratings():
     """Load ratings from u.data into database."""
 
+    print "Ratings"
+
+    for i, row in enumerate(open("seed_data/u.data")):
+        row = row.rstrip()
+
+        user_id, movie_id, score, timestamp = row.split("\t")
+
+        user_id = int(user_id)
+        movie_id = int(movie_id)
+        score = int(score)
+
+        # We don't care about the timestamp, so we'll ignore this
+
+        rating = Rating(user_id=user_id,
+                        movie_id=movie_id,
+                        score=score)
+
+        # We need to add to the session or it won't ever be stored
+        db.session.add(rating)
+
+        # provide some sense of progress
+        if i % 1000 == 0:
+            print i
+
+            # An optimization: if we commit after every add, the database
+            # will do a lot of work committing each record. However, if we
+            # wait until the end, on computers with smaller amounts of
+            # memory, it might thrash around. By committing every 1,000th
+            # add, we'll strike a good balance.
+
+            db.session.commit()
+
+    # Once we're done, we should commit our work
+    db.session.commit()
+
 
 if __name__ == "__main__":
     connect_to_db(app)
-
-    # In case tables haven't been created, create them
     db.create_all()
 
-    # Import different types of data
     load_users()
     load_movies()
     load_ratings()
