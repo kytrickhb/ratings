@@ -1,0 +1,30 @@
+<!-- ///sign-in form that asks for a username and password  -->
+
+
+
+
+
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% block content %}
+
+<html>
+<head>
+  <title>sign in</title>
+</head>
+<body>
+    <h1>sign-in form</h1>
+
+<h2>Users</h2>
+<p><a href="/users">View all users</a></p>
+
+    <form action="/signin">
+        <label>What's your username? <input type="text" name="username"></label>
+        <label>What's your password? <input type="text" name="password"></label>
+        <input type="submit">
+    </form>
+
+</body>
+
+{% endblock %}
+</html>
