@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<title>new account</title>
+
+
+<h2>New Account</h2>
+<form action="/make_account" method="POST">
+</form>
+
+    <form action="/process_signin" method="POST">
+        <label>Enter your email: <input type="text" name="username"></label>
+        <br>
+        <label>Choose your password: <input type="text" name="password"></label>
+                <br>
+        <label>Type your age: <input type="text" name="age"></label>
+                <br>
+        <label>Type your zipcode: <input type="text" name="zipcode"></label>
+                <br>
+        <input type="submit">
+    </form>
+
+{% endblock %}
