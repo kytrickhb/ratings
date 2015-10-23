@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Ratings</h1>
+
+<p> hello </p>
+{{current_user.email}}
+
+{% for rating in current_user.ratings %}
+    {{rating.movie_title}}
+{% endfor %}
+
+{% endblock %}
